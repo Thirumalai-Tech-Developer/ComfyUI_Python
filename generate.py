@@ -36,6 +36,10 @@ QUICK START
     # batch mode: many jobs from one file
     python generate.py --server http://127.0.0.1:8188 --jobs jobs.json
 
+    # multi-scene mode: one JSON describing a whole sequence of shots,
+    # duration given in seconds instead of raw frame counts
+    python generate.py --server http://127.0.0.1:8188 --scenes scenes.json
+
 JOBS FILE FORMAT (jobs.json)
     [
       {
@@ -52,6 +56,38 @@ JOBS FILE FORMAT (jobs.json)
     ]
     Any field you omit falls back to the matching --image-prompt/--width/etc.
     CLI default for that run.
+
+SCENES FILE FORMAT (scenes.json) -- for multi-shot sequences
+    {
+      "total_scene": 5,
+      "scenes": [
+        {
+          "id": 1,
+          "image_prompt_positive": "...",
+          "image_prompt_negative": "...",
+          "video_prompt_positive": "...",
+          "video_prompt_negative": "...",
+          "audio_prompt": "...",
+          "seed": 1024,
+          "duration": 5
+        },
+        { "id": 2, "...": "..." }
+      ]
+    }
+    - "duration" is in **seconds** and is converted to a valid LTX frame
+      count using --gen-fps (default 24), rounded to the nearest value LTX
+      accepts (frame counts of the form 8*n+1).
+    - "seed" is used for both the image and video sampler unless you also
+      give per-scene "image_seed"/"video_seed" (those take priority).
+    - "audio_prompt" is folded into the video's positive prompt as a
+      "Sound Design Prompt" section (matching how the original workflow's
+      LTX-2.3 foley conditioning expects it) -- see --audio-prompt-template
+      to customize, or --no-audio-in-prompt to disable and drop it.
+    - Any field also accepted by the jobs.json format above (width, height,
+      fps, input_image, filename_prefix, overrides, ...) can be added to a
+      scene too and will be used for that scene.
+    - Output files are named "scene_<id>_..." unless a scene sets "name" or
+      "filename_prefix" explicitly.
 """
 
 from __future__ import annotations
@@ -202,6 +238,7 @@ def apply_job(base_api_prompt: Dict[str, Any], roles: Dict[str, Any], job: Dict[
         set_input(roles["ltxv_node"], "length", frames)
     if roles.get("audio_latent"):
         set_input(roles["audio_latent"], "frames_number", frames)
+        set_input(roles["audio_latent"], "frame_rate", job.get("gen_fps"))
 
     if roles.get("qwen_ksampler"):
         set_input(roles["qwen_ksampler"], "seed", job.get("image_seed"))
@@ -222,6 +259,92 @@ def apply_job(base_api_prompt: Dict[str, Any], roles: Dict[str, Any], job: Dict[
 
     apply_overrides(api_prompt, job.get("overrides", []))
     return api_prompt
+
+
+# ---------------------------------------------------------------------------
+# Scenes file support (multi-scene sequence -> list of job dicts)
+# ---------------------------------------------------------------------------
+
+DEFAULT_AUDIO_PROMPT_TEMPLATE = "{video_prompt}\n\nSound Design Prompt\n{audio_prompt}"
+
+
+def duration_to_frames(duration_seconds: float, fps: float) -> int:
+    """
+    Convert a duration in seconds to a frame count LTX will accept.
+    LTX video latents are temporally compressed 8x, so valid lengths are of
+    the form 8*n + 1 (the workflow's own default, 49, is 8*6 + 1). We pick
+    the closest such value to duration_seconds * fps, with a floor of 9
+    frames (the minimum LTXVImgToVideo allows).
+    """
+    raw = max(float(duration_seconds) * float(fps), 9.0)
+    n = round((raw - 1) / 8)
+    n = max(n, 1)
+    return 8 * n + 1
+
+
+def load_scenes_file(path: str, gen_fps: float, audio_prompt_template: Optional[str]) -> List[Dict[str, Any]]:
+    """
+    Load a scenes.json (the {"total_scene": N, "scenes": [...]} format) and
+    turn it into the internal job-dict format apply_job() understands.
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    scenes = data.get("scenes")
+    if scenes is None:
+        raise ValueError(f"{path}: expected a top-level \"scenes\" list")
+
+    declared_total = data.get("total_scene")
+    if declared_total is not None and declared_total != len(scenes):
+        print(f"[warn] {path}: total_scene={declared_total} but found {len(scenes)} entries in \"scenes\"")
+
+    scenes = sorted(scenes, key=lambda s: s.get("id", 0))
+
+    jobs = []
+    for scene in scenes:
+        sid = scene.get("id")
+        name = scene.get("name") or scene.get("filename_prefix") or (
+            f"scene_{sid:03d}" if isinstance(sid, int) else f"scene_{sid}")
+
+        video_prompt = scene.get("video_prompt_positive", "")
+        audio_prompt = scene.get("audio_prompt")
+        if audio_prompt and audio_prompt_template:
+            video_prompt = audio_prompt_template.format(
+                video_prompt=video_prompt, audio_prompt=audio_prompt)
+
+        duration = scene.get("duration")
+        frames = scene.get("frames")
+        if frames is None and duration is not None:
+            frames = duration_to_frames(duration, scene.get("gen_fps", gen_fps))
+
+        seed = scene.get("seed")
+
+        job = {
+            "name": name,
+            "image_prompt": scene.get("image_prompt_positive"),
+            "image_negative_prompt": scene.get("image_prompt_negative"),
+            "video_prompt": video_prompt or None,
+            "video_negative_prompt": scene.get("video_prompt_negative"),
+            "input_image": scene.get("input_image"),
+            "width": scene.get("width"),
+            "height": scene.get("height"),
+            "frames": frames,
+            "fps": scene.get("fps"),
+            "image_seed": scene.get("image_seed", seed),
+            "video_seed": scene.get("video_seed", seed),
+            "image_steps": scene.get("image_steps"),
+            "image_cfg": scene.get("image_cfg"),
+            "video_steps": scene.get("video_steps"),
+            "video_cfg": scene.get("video_cfg"),
+            "filename_prefix": scene.get("filename_prefix") or name,
+            "overrides": scene.get("overrides", []),
+            "gen_fps": scene.get("gen_fps", gen_fps),
+            "_scene_id": sid,
+            "_duration": duration,
+        }
+        jobs.append(job)
+
+    return jobs
 
 
 # ---------------------------------------------------------------------------
@@ -263,6 +386,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
     # batch mode
     ap.add_argument("--jobs", default=None, help="Path to a JSON list of job dicts for batch processing")
+
+    # multi-scene mode
+    ap.add_argument("--scenes", default=None,
+                     help="Path to a scenes.json ({\"total_scene\": N, \"scenes\": [...]}) for a multi-shot sequence")
+    ap.add_argument("--gen-fps", type=float, default=24.0,
+                     help="FPS used to convert each scene's \"duration\" (seconds) into a frame count, "
+                          "and to set the LTX audio latent's frame_rate. Default 24.")
+    ap.add_argument("--audio-prompt-template", default=DEFAULT_AUDIO_PROMPT_TEMPLATE,
+                     help="Python str.format template combining {video_prompt} and {audio_prompt} into the "
+                          "text sent to the video's positive conditioning. Only used in --scenes mode.")
+    ap.add_argument("--no-audio-in-prompt", action="store_true",
+                     help="In --scenes mode, don't fold audio_prompt into the video positive prompt at all")
 
     ap.add_argument("-v", "--verbose", action="store_true")
     return ap
@@ -352,7 +487,18 @@ def main():
         "overrides": args.override,
     }
 
-    if args.jobs:
+    if args.scenes and args.jobs:
+        print("ERROR: use either --scenes or --jobs, not both", file=sys.stderr)
+        sys.exit(1)
+
+    if args.scenes:
+        template = None if args.no_audio_in_prompt else args.audio_prompt_template
+        jobs = load_scenes_file(args.scenes, gen_fps=args.gen_fps, audio_prompt_template=template)
+        print(f"Loaded {len(jobs)} scene(s) from {args.scenes}")
+        for j in jobs:
+            print(f"  id={j.get('_scene_id')!s:>4}  name={j['name']:<20}  "
+                  f"duration={j.get('_duration')}s -> frames={j.get('frames')}")
+    elif args.jobs:
         with open(args.jobs, "r", encoding="utf-8") as f:
             jobs = json.load(f)
         if not isinstance(jobs, list):

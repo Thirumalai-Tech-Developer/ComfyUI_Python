@@ -84,7 +84,73 @@ Each entry in the JSON list can override any of: `image_prompt`,
 `--flag` you passed on the command line (or the workflow's original default
 if you didn't pass that flag either).
 
-## 4. Tweaking anything else
+## 4. Multi-scene sequences (durations in seconds)
+
+For a whole sequence of shots described as scenes with `duration` in
+seconds (rather than raw frame counts), use `--scenes`:
+
+```bash
+python generate.py --server http://127.0.0.1:8188 --scenes scenes.example.json
+```
+
+`scenes.json` format:
+
+```json
+{
+  "total_scene": 5,
+  "scenes": [
+    {
+      "id": 1,
+      "image_prompt_positive": "....",
+      "image_prompt_negative": "....",
+      "video_prompt_positive": "....",
+      "video_prompt_negative": "....",
+      "audio_prompt": "....",
+      "seed": 1024,
+      "duration": 5
+    }
+  ]
+}
+```
+
+How each field maps onto the graph:
+
+- **`duration`** (seconds) is converted to a frame count with
+  `--gen-fps` (default 24), rounded to the nearest value LTX actually
+  accepts (frame counts must be `8*n + 1`, e.g. 49, 73, 121 — same shape as
+  the workflow's own default of 49). This also sets the LTX audio latent's
+  `frame_rate` so video and audio stay in sync. Override the fps used for
+  this conversion per-run with `--gen-fps 30`, or per-scene with a
+  `"gen_fps"` field on that scene.
+- **`seed`** is used for *both* the Qwen image sampler and the LTX video
+  sampler, unless a scene also sets `"image_seed"` / `"video_seed"`
+  explicitly (those win).
+- **`audio_prompt`** doesn't have its own conditioning input in this
+  workflow — LTX-2.3's foley model reads it from the same positive
+  conditioning as the video motion prompt. So it gets folded in as a
+  "Sound Design Prompt" section, exactly matching how the original
+  workflow's own prompt (node 528) was written:
+
+  ```
+  {video_prompt_positive}
+
+  Sound Design Prompt
+  {audio_prompt}
+  ```
+
+  Customize this with `--audio-prompt-template` (a Python `str.format`
+  template using `{video_prompt}` / `{audio_prompt}`), or turn it off
+  entirely with `--no-audio-in-prompt` if you'd rather rely on the LTX
+  foley LoRA alone.
+- Every scene is also allowed any field from the plain `jobs.json` format
+  (`width`, `height`, `fps`, `input_image`, `filename_prefix`,
+  `overrides`, ...) if you need to override something per-shot.
+- Scenes run in order of `id`. Output files are named `scene_<id>` unless
+  you set `"name"` or `"filename_prefix"` on a scene. `"total_scene"` is
+  just a sanity check — a mismatch with the actual list length prints a
+  warning but doesn't stop the run.
+
+## 5. Tweaking anything else
 
 Every input on every node can be poked directly with `--override`, without
 editing any code:
@@ -99,7 +165,7 @@ type) or `nodeId.input_name=value` (patches a specific node — get ids by
 running the converter standalone, see below). This also works per-job via
 an `"overrides": ["...", "..."]` list inside a job entry in the jobs file.
 
-## 5. Inspecting the converted graph / node ids
+## 6. Inspecting the converted graph / node ids
 
 ```bash
 python workflow_converter.py Qwen_LTX2_3.json --server http://127.0.0.1:8188 -o workflow_api.json
