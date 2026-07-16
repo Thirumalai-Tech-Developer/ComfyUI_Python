@@ -1,0 +1,24 @@
+[
+  {
+    "name": "under_the_bed",
+    "image_prompt": "Maya is a 25-year-old woman, slender build, pale skin, messy shoulder-length wavy dark brown hair, faded oversized grey t-shirt, small claustrophobic vintage bedroom, floor-level shot looking under an antique oak bed, empty space, thin sliver of blue moonlight, dust motes, hyper-realistic",
+    "image_negative_prompt": "blurry, low quality, cartoon, anime, watermark, text, deformed",
+    "video_prompt": "Slow dolly crawl backward. Environment remains still. Thin moonlight shifts infinitesimally across the floorboards. Dust motes drift lazily.",
+    "video_negative_prompt": "static camera, jittery motion, excessive shaky cam, flickering, morphing walls",
+    "width": 512,
+    "height": 512,
+    "frames": 49,
+    "fps": 24,
+    "image_seed": 111111,
+    "video_seed": 222222
+  },
+  {
+    "name": "reuse_my_photo",
+    "input_image": "./my_photo.png",
+    "video_prompt": "camera slowly orbits left, hair moves gently in the breeze, soft ambient light",
+    "video_negative_prompt": "static camera, jittery motion, flickering",
+    "frames": 49,
+    "fps": 24,
+    "video_seed": 999
+  }
+]
