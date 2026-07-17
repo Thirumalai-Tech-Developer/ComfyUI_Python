@@ -102,6 +102,7 @@ from typing import Any, Dict, List, Optional
 
 from comfyui_client import ComfyUIClient, ComfyUIError
 from workflow_converter import convert_workflow, fetch_object_info
+from resilience import ServerResolver, ProgressStore, retry_with_backoff, is_connection_error
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -403,7 +404,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     return ap
 
 
-def load_or_convert_workflow(args) -> Dict[str, Any]:
+def load_or_convert_workflow(args, server: str) -> Dict[str, Any]:
     if args.api_workflow:
         with open(args.api_workflow, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -411,8 +412,8 @@ def load_or_convert_workflow(args) -> Dict[str, Any]:
     with open(args.workflow, "r", encoding="utf-8") as f:
         ui_workflow = json.load(f)
 
-    print(f"Fetching node schemas from {args.server}/object_info ...")
-    object_info = fetch_object_info(args.server)
+    print(f"Fetching node schemas from {server}/object_info ...")
+    object_info = fetch_object_info(server)
     api_prompt, _meta = convert_workflow(ui_workflow, object_info, verbose=args.verbose)
 
     if args.save_api_workflow:
@@ -421,6 +422,25 @@ def load_or_convert_workflow(args) -> Dict[str, Any]:
         print(f"Saved converted workflow to {args.save_api_workflow}")
 
     return api_prompt
+
+
+def wait_for_server(resolver: ServerResolver, client: ComfyUIClient, max_attempts: int = 0,
+                     initial_delay: float = 5.0):
+    """Block until the server (following ntfy-discovered URL changes) answers a basic ping."""
+
+    def ping():
+        client.server = resolver.server
+        client.get_queue()
+
+    def on_retry(attempt, e, delay):
+        print(f"[wait] server not reachable yet ({e}); retry {attempt} in {delay:.0f}s ...")
+        if resolver.refresh():
+            print(f"[wait] discovered new server URL: {resolver.server}")
+
+    retry_with_backoff(ping, is_retryable=is_connection_error, max_attempts=max_attempts,
+                        initial_delay=initial_delay, on_retry=on_retry)
+    client.server = resolver.server
+    print(f"[wait] server is up: {resolver.server}")
 
 
 def make_progress_printer(job_name: str):
@@ -459,12 +479,29 @@ def run_job(client: ComfyUIClient, api_prompt: Dict[str, Any], job_name: str, ou
 def main():
     args = build_arg_parser().parse_args()
 
-    base_api_prompt = load_or_convert_workflow(args)
+    resolver = ServerResolver(args.server, args.server_discovery_ntfy)
+    if args.server_discovery_ntfy:
+        if resolver.refresh():
+            print(f"[main] using latest discovered server URL: {resolver.server}")
+        else:
+            print(f"[main] no ntfy message yet on topic '{args.server_discovery_ntfy}', "
+                  f"starting with --server as given: {resolver.server}")
+
+    client = ComfyUIClient(server=resolver.server)
+    top_level_attempts = 0 if args.watch else max(args.max_retries, 1)
+    wait_for_server(resolver, client, max_attempts=top_level_attempts, initial_delay=args.retry_delay)
+
+    base_api_prompt = retry_with_backoff(
+        lambda: load_or_convert_workflow(args, resolver.server),
+        is_retryable=is_connection_error,
+        max_attempts=top_level_attempts,
+        initial_delay=args.retry_delay,
+        on_retry=lambda a, e, d: (print(f"[main] workflow fetch failed ({e}); retry {a} in {d:.0f}s ..."),
+                                   resolver.refresh()),
+    )
     roles = discover_roles(base_api_prompt)
     if args.verbose:
         print("Discovered graph roles:", json.dumps(roles, indent=2))
-
-    client = ComfyUIClient(server=args.server)
 
     cli_job_defaults = {
         "name": args.filename_prefix or "video",
@@ -507,20 +544,42 @@ def main():
     else:
         jobs = [{}]  # single job using pure CLI defaults
 
+    progress = ProgressStore(os.path.join(args.out_dir, "progress.json"))
+
     exit_code = 0
     for i, job in enumerate(jobs):
         merged = dict(cli_job_defaults)
         merged.update({k: v for k, v in job.items() if v is not None})
         job_name = merged.get("name") or f"job{i+1}"
 
-        try:
+        if not args.force and progress.is_done(job_name):
+            print(f"[{job_name}] already completed (see {progress.path}), skipping. Use --force to redo.")
+            continue
+
+        def attempt(merged=merged, job_name=job_name):
+            client.server = resolver.server
             api_prompt = apply_job(base_api_prompt, roles, merged, client)
-            run_job(client, api_prompt, job_name, args.out_dir)
+            return run_job(client, api_prompt, job_name, args.out_dir)
+
+        def on_retry(attempt_n, e, delay, job_name=job_name):
+            print(f"\n[{job_name}] connection issue ({e}); retry {attempt_n} in {delay:.0f}s "
+                  f"(server may be restarting) ...")
+            if resolver.refresh():
+                print(f"[{job_name}] switched to newly discovered server URL: {resolver.server}")
+
+        job_max_attempts = 0 if args.watch else args.max_retries
+        try:
+            files = retry_with_backoff(attempt, is_retryable=is_connection_error,
+                                        max_attempts=job_max_attempts,
+                                        initial_delay=args.retry_delay, on_retry=on_retry)
+            progress.mark_done(job_name, files)
         except ComfyUIError as e:
             print(f"\n[{job_name}] FAILED: {e}", file=sys.stderr)
+            progress.mark_failed(job_name, str(e))
             exit_code = 1
         except Exception as e:
             print(f"\n[{job_name}] FAILED (unexpected error): {e}", file=sys.stderr)
+            progress.mark_failed(job_name, str(e))
             exit_code = 1
 
     sys.exit(exit_code)

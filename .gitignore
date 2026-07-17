@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 test.json
+=======
+test.json
+comfyui.ipynb
+>>>>>>> 293c9ca (chore: remove LTX watchdog notebook and add comfyui.ipynb to ignore list)
