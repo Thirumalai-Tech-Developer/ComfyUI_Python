@@ -41,7 +41,11 @@ CONTROL_AFTER_GENERATE_VALUES = {"fixed", "increment", "decrement", "randomize"}
 
 # Node types that exist in the UI graph purely for editor convenience and
 # have no equivalent / are meaningless in a headless API submission.
-SKIP_NODE_TYPES = {"Note", "MarkdownNote"}
+SKIP_NODE_TYPES = {
+    "Note",
+    "MarkdownNote",
+    "Reroute",
+}
 
 
 def fetch_object_info(server_url: str, timeout: float = 30.0) -> Dict[str, Any]:
