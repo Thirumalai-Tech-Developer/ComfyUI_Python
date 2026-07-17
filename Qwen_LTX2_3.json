@@ -2,7 +2,7 @@
   "id": "b8ad0463-62b6-4826-aed1-a4c1b52510a7",
   "revision": 0,
   "last_node_id": 531,
-  "last_link_id": 671,
+  "last_link_id": 679,
   "nodes": [
     {
       "id": 493,
@@ -16,7 +16,7 @@
         190
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -105,7 +105,7 @@
         200
       ],
       "flags": {},
-      "order": 14,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -149,7 +149,7 @@
         82
       ],
       "flags": {},
-      "order": 9,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -189,7 +189,7 @@
         563.3055639565321
       ],
       "flags": {},
-      "order": 27,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -224,7 +224,7 @@
       "flags": {
         "collapsed": false
       },
-      "order": 37,
+      "order": 29,
       "mode": 0,
       "inputs": [
         {
@@ -273,7 +273,7 @@
         270
       ],
       "flags": {},
-      "order": 36,
+      "order": 28,
       "mode": 0,
       "inputs": [
         {
@@ -311,114 +311,6 @@
         false,
         1
       ]
-    },
-    {
-      "id": 505,
-      "type": "Reroute",
-      "pos": [
-        1154.3226438366678,
-        325.37563656686507
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 13,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 638
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "VAE",
-          "links": [
-            639
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
-      "id": 506,
-      "type": "Reroute",
-      "pos": [
-        2723.294281050279,
-        315.20233617011456
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 18,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 639
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "VAE",
-          "links": [
-            660
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
-      "id": 507,
-      "type": "Reroute",
-      "pos": [
-        1134.2342483057569,
-        255.40000915527344
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 21,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 640
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "MODEL",
-          "links": [
-            658
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
     },
     {
       "id": 508,
@@ -494,148 +386,6 @@
       "bgcolor": "#653"
     },
     {
-      "id": 510,
-      "type": "Reroute",
-      "pos": [
-        2422.943095524706,
-        1805.721566682791
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 22,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 641
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "MODEL",
-          "links": [
-            642
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
-      "id": 511,
-      "type": "Reroute",
-      "pos": [
-        3560.498603709479,
-        1799.247736448298
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 24,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 642
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "MODEL",
-          "links": [
-            654
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
-      "id": 512,
-      "type": "Reroute",
-      "pos": [
-        943.1958494904231,
-        1797.3981513068338
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 20,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 643
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "MODEL",
-          "links": [
-            641
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
-      "id": 513,
-      "type": "Reroute",
-      "pos": [
-        1222.2600155807481,
-        1897.0047164560597
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "*",
-          "links": null
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
       "id": 514,
       "type": "CLIPLoader",
       "pos": [
@@ -647,7 +397,7 @@
         106
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -683,7 +433,7 @@
         58
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -691,7 +441,7 @@
           "name": "VAE",
           "type": "VAE",
           "links": [
-            638
+            677
           ]
         }
       ],
@@ -716,7 +466,7 @@
         170
       ],
       "flags": {},
-      "order": 6,
+      "order": 5,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -761,7 +511,7 @@
         58
       ],
       "flags": {},
-      "order": 17,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -775,7 +525,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            643
+            674
           ]
         }
       ],
@@ -800,7 +550,7 @@
         130
       ],
       "flags": {},
-      "order": 7,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -830,43 +580,6 @@
       "bgcolor": "#653"
     },
     {
-      "id": 524,
-      "type": "Reroute",
-      "pos": [
-        2214.0771875332402,
-        255.85064148348044
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 23,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 658
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "MODEL",
-          "links": [
-            649,
-            662
-          ]
-        }
-      ],
-      "title": "Image Model",
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
       "id": 525,
       "type": "VAEDecode",
       "pos": [
@@ -878,7 +591,7 @@
         100
       ],
       "flags": {},
-      "order": 26,
+      "order": 18,
       "mode": 0,
       "inputs": [
         {
@@ -889,7 +602,7 @@
         {
           "name": "vae",
           "type": "VAE",
-          "link": 660
+          "link": 677
         }
       ],
       "outputs": [
@@ -929,7 +642,7 @@
         186
       ],
       "flags": {},
-      "order": 28,
+      "order": 20,
       "mode": 0,
       "inputs": [
         {
@@ -948,7 +661,7 @@
           "name": "model_pass",
           "shape": 7,
           "type": "MODEL",
-          "link": 662
+          "link": 679
         }
       ],
       "outputs": [
@@ -1003,7 +716,7 @@
         603.0023271789778
       ],
       "flags": {},
-      "order": 38,
+      "order": 30,
       "mode": 0,
       "inputs": [
         {
@@ -1038,7 +751,7 @@
         58
       ],
       "flags": {},
-      "order": 33,
+      "order": 25,
       "mode": 0,
       "inputs": [
         {
@@ -1083,7 +796,7 @@
         49.199951171875
       ],
       "flags": {},
-      "order": 34,
+      "order": 26,
       "mode": 0,
       "inputs": [
         {
@@ -1123,7 +836,7 @@
         186
       ],
       "flags": {},
-      "order": 35,
+      "order": 27,
       "mode": 0,
       "inputs": [
         {
@@ -1199,13 +912,13 @@
         350
       ],
       "flags": {},
-      "order": 25,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 649
+          "link": 678
         },
         {
           "name": "positive",
@@ -1267,7 +980,7 @@
         58
       ],
       "flags": {},
-      "order": 19,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -1281,7 +994,8 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            640
+            678,
+            679
           ]
         }
       ],
@@ -1306,7 +1020,7 @@
         82
       ],
       "flags": {},
-      "order": 8,
+      "order": 7,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -1340,7 +1054,7 @@
         82
       ],
       "flags": {},
-      "order": 16,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -1380,7 +1094,7 @@
         170
       ],
       "flags": {},
-      "order": 12,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -1430,7 +1144,7 @@
         200
       ],
       "flags": {},
-      "order": 15,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -1474,7 +1188,7 @@
         214
       ],
       "flags": {},
-      "order": 29,
+      "order": 21,
       "mode": 0,
       "inputs": [
         {
@@ -1549,13 +1263,13 @@
         334
       ],
       "flags": {},
-      "order": 31,
+      "order": 23,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 654
+          "link": 674
         },
         {
           "name": "positive",
@@ -1615,7 +1329,7 @@
         46
       ],
       "flags": {},
-      "order": 30,
+      "order": 22,
       "mode": 0,
       "inputs": [
         {
@@ -1655,7 +1369,7 @@
         46
       ],
       "flags": {},
-      "order": 32,
+      "order": 24,
       "mode": 0,
       "inputs": [
         {
@@ -1697,7 +1411,7 @@
         106
       ],
       "flags": {},
-      "order": 10,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -1841,54 +1555,6 @@
       "IMAGE"
     ],
     [
-      638,
-      515,
-      0,
-      505,
-      0,
-      "VAE"
-    ],
-    [
-      639,
-      505,
-      0,
-      506,
-      0,
-      "VAE"
-    ],
-    [
-      640,
-      516,
-      0,
-      507,
-      0,
-      "MODEL"
-    ],
-    [
-      641,
-      512,
-      0,
-      510,
-      0,
-      "*"
-    ],
-    [
-      642,
-      510,
-      0,
-      511,
-      0,
-      "*"
-    ],
-    [
-      643,
-      521,
-      0,
-      512,
-      0,
-      "MODEL"
-    ],
-    [
       645,
       528,
       0,
@@ -1919,14 +1585,6 @@
       518,
       3,
       "IMAGE"
-    ],
-    [
-      649,
-      524,
-      0,
-      519,
-      0,
-      "MODEL"
     ],
     [
       650,
@@ -1961,14 +1619,6 @@
       "MODEL"
     ],
     [
-      654,
-      511,
-      0,
-      523,
-      0,
-      "MODEL"
-    ],
-    [
       655,
       518,
       0,
@@ -1993,14 +1643,6 @@
       "LATENT"
     ],
     [
-      658,
-      507,
-      0,
-      524,
-      0,
-      "MODEL"
-    ],
-    [
       659,
       519,
       0,
@@ -2009,28 +1651,12 @@
       "LATENT"
     ],
     [
-      660,
-      506,
-      0,
-      525,
-      1,
-      "VAE"
-    ],
-    [
       661,
       525,
       0,
       526,
       1,
       "IMAGE"
-    ],
-    [
-      662,
-      524,
-      0,
-      526,
-      2,
-      "MODEL"
     ],
     [
       663,
@@ -2102,6 +1728,38 @@
       0,
       516,
       0,
+      "MODEL"
+    ],
+    [
+      674,
+      521,
+      0,
+      523,
+      0,
+      "MODEL"
+    ],
+    [
+      677,
+      515,
+      0,
+      525,
+      1,
+      "VAE"
+    ],
+    [
+      678,
+      516,
+      0,
+      519,
+      0,
+      "MODEL"
+    ],
+    [
+      679,
+      516,
+      0,
+      526,
+      2,
       "MODEL"
     ]
   ],
@@ -2319,7 +1977,7 @@
         "state": {
           "lastGroupId": 154,
           "lastNodeId": 531,
-          "lastLinkId": 671,
+          "lastLinkId": 679,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -2445,13 +2103,13 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.34871781956075215,
+      "scale": 0.23817896288556265,
       "offset": [
-        -1188.1444475313738,
-        -51.411609936719515
+        598.4256125574412,
+        622.8243262967939
       ]
     },
-    "frontendVersion": "1.45.20"
+    "frontendVersion": "1.45.21"
   },
   "version": 0.4
 }
