@@ -400,6 +400,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ap.add_argument("--no-audio-in-prompt", action="store_true",
                      help="In --scenes mode, don't fold audio_prompt into the video positive prompt at all")
 
+    ap.add_argument("--server-discovery-ntfy", default=None,
+                     help="ntfy topic to monitor for dynamic server URL updates")
+    ap.add_argument("--watch", action="store_true",
+                     help="Wait indefinitely for the server to become available instead of failing")
+    ap.add_argument("--max-retries", type=int, default=3,
+                     help="Maximum number of connection retries before failing")
+    ap.add_argument("--retry-delay", type=float, default=5.0,
+                     help="Base delay in seconds between connection retries")
+    ap.add_argument("--force", action="store_true",
+                     help="Force generating jobs that are already marked as done in progress.json")
+
     ap.add_argument("-v", "--verbose", action="store_true")
     return ap
 
