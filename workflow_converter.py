@@ -33,9 +33,8 @@ from __future__ import annotations
 import argparse
 import copy
 import json
-import sys
 import urllib.request
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 CONTROL_AFTER_GENERATE_VALUES = {"fixed", "increment", "decrement", "randomize"}
 

@@ -97,7 +97,6 @@ import copy
 import json
 import os
 import sys
-import time
 from typing import Any, Dict, List, Optional
 
 from comfyui_client import ComfyUIClient, ComfyUIError

@@ -1,6 +1,7 @@
-<<<<<<< HEAD
 test.json
-=======
-test.json
+workflow_api.json
+prompt.txt
 comfyui.ipynb
->>>>>>> 293c9ca (chore: remove LTX watchdog notebook and add comfyui.ipynb to ignore list)
+__pycache__
+outputs
+my_videos
